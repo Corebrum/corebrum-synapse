@@ -7,8 +7,10 @@
 
 import { spawn } from "node:child_process";
 import { existsSync, openSync, readFileSync, writeFileSync } from "node:fs";
+import { createRequire } from "node:module";
 import { join } from "node:path";
 
+import { confirm } from "@inquirer/prompts";
 import { ensureActiveMap, publicCatalog, type RobotMap } from "@corebrum/core";
 import { execa } from "execa";
 
@@ -26,12 +28,16 @@ import {
   CLOUD_REST,
   ensureRobotId,
   fetchRobotDetails,
+  getApiToken,
   getRobotId,
+  isCloudRobotRegistered,
   setApiToken,
   setRobotId,
   syncSignedInRobotProfile,
 } from "../util/robot-cloud-config.js";
 import { err, info, isTty, ok, warn } from "../util/logger.js";
+import { loginCommand } from "./cloud-auth.js";
+import { registerCommand } from "./register.js";
 
 const COMMS_LOG = "/tmp/synapse-comms.log";
 
@@ -92,6 +98,115 @@ function tailLog(path: string, maxChars = 1200): string {
   }
 }
 
+/** Presence needs a Cloud API token and a robot row on the signed-in account. */
+async function ensureCloudReadyForConnect(): Promise<void> {
+  if (!getApiToken()) {
+    if (!isTty) {
+      err("Not logged in. Run `synapse login`, then `synapse register`, then `synapse connect`.");
+      process.exit(1);
+    }
+    const wantLogin = await confirm({
+      message: "Not logged in to Corebrum Cloud. Log in now? (required for online presence)",
+      default: true,
+    });
+    if (!wantLogin) {
+      err("Cloud login is required for connect. Run `synapse login` first.");
+      process.exit(1);
+    }
+    await loginCommand({});
+    if (!getApiToken()) {
+      err("Login did not store an API token.");
+      process.exit(1);
+    }
+  }
+
+  if (await isCloudRobotRegistered()) {
+    return;
+  }
+
+  if (!isTty) {
+    err("This robot id is not registered on your account. Run `synapse register`, then `synapse connect`.");
+    process.exit(1);
+  }
+  const wantRegister = await confirm({
+    message: "This robot is not registered on Corebrum Cloud. Register it now?",
+    default: true,
+  });
+  if (!wantRegister) {
+    err("Register this robot before connect. Run `synapse register` first.");
+    process.exit(1);
+  }
+  await registerCommand({ defaults: true });
+  if (!(await isCloudRobotRegistered())) {
+    err("Register did not claim this robot on Corebrum Cloud.");
+    process.exit(1);
+  }
+}
+
+/** comms.js requires the node-datachannel native binary before the socket opens. */
+function assertNodeDataChannelLoads(robotDir: string): void {
+  const requireFromRobot = createRequire(join(robotDir, "package.json"));
+  try {
+    requireFromRobot("node-datachannel");
+  } catch (e) {
+    err("node-datachannel native module failed to load — cloud WebRTC cannot start.");
+    err(e instanceof Error ? e.message : String(e));
+    err("Fix: reinstall Corebrum Synapse (Super+Space Updates → Corebrum Synapse), or:");
+    err(`  cd ${getCliPaths().installDir} && pnpm rebuild node-datachannel`);
+    process.exit(1);
+  }
+}
+
+/**
+ * Wait for a stable signaling session. A missing API token used to leave
+ * comms.js alive while the server disconnected it in a loop, and the CLI
+ * still printed "Robot connected."
+ */
+async function waitForStableSignaling(pid: number): Promise<void> {
+  const deadline = Date.now() + 10000;
+  let connectedAt: number | null = null;
+  while (Date.now() < deadline) {
+    await new Promise((r) => setTimeout(r, 500));
+    if (!isPidAlive(pid)) {
+      err("comms.js exited — robot did not stay connected.");
+      err(`Last log output:\n${tailLog(COMMS_LOG)}`);
+      process.exit(1);
+    }
+    let log = "";
+    try {
+      log = readFileSync(COMMS_LOG, "utf8");
+    } catch {
+      continue;
+    }
+    if (/Connected to signaling server/.test(log) && connectedAt === null) {
+      connectedAt = Date.now();
+    }
+    if (
+      /Disconnected from signaling server/.test(log) ||
+      /io server disconnect/i.test(log)
+    ) {
+      await pkill("comms.js");
+      err("Signaling server closed the session — this robot is not online.");
+      err("Usually the API token is missing or this robot id is not registered.");
+      err("Fix: synapse login && synapse register && synapse connect");
+      err(`Last log output:\n${tailLog(COMMS_LOG)}`);
+      process.exit(1);
+    }
+    // Stay online briefly so a bounce-disconnect loop fails this check.
+    if (connectedAt !== null && Date.now() - connectedAt >= 2500) {
+      return;
+    }
+  }
+  await pkill("comms.js");
+  if (connectedAt === null) {
+    err("No signaling handshake in time — robot did not come online.");
+  } else {
+    err("Signaling did not stay connected long enough — robot is not online.");
+  }
+  err(`Last log output:\n${tailLog(COMMS_LOG)}`);
+  process.exit(1);
+}
+
 export async function connectCommand(opts: { server?: string }): Promise<void> {
   const dir = requireRobotPkgDir();
   const comms = join(dir, "comms.js");
@@ -113,6 +228,9 @@ export async function connectCommand(opts: { server?: string }): Promise<void> {
     err("Then:     synapse connect");
     process.exit(1);
   }
+
+  await ensureCloudReadyForConnect();
+  assertNodeDataChannelLoads(dir);
 
   // Avoid stacking multiple silent comms processes.
   await pkill("comms.js");
@@ -163,13 +281,7 @@ export async function connectCommand(opts: { server?: string }): Promise<void> {
     process.exit(1);
   }
 
-  // Give startup enough time to fail on missing native modules.
-  await new Promise((r) => setTimeout(r, 1500));
-  if (!isPidAlive(pid)) {
-    err("comms.js exited immediately — robot did not stay connected.");
-    err(`Last log output:\n${tailLog(COMMS_LOG)}`);
-    process.exit(1);
-  }
+  await waitForStableSignaling(pid);
 
   const running = await listCommsPids();
   if (running.length > 1) {
