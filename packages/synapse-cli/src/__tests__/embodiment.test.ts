@@ -31,6 +31,14 @@ describe("embodiment", () => {
     assert.match(next, /Keep this note/);
     assert.match(next, /And this/);
     assert.match(next, /ros2_camera_snapshot/);
+    assert.match(next, /ROS 2 is the middleware/);
+    assert.match(next, /RealSense is the camera/);
+    assert.match(next, /cloud\.corebrum\.com/);
+    assert.match(next, /RTAB-Map mapping with Nav2/);
+    assert.match(next, /synapse login, then synapse connect/);
+    assert.match(next, /https:\/\/skills\.corebrum\.com/);
+    assert.match(next, /synapse skills search/);
+    assert.match(next, /Publish to the marketplace only when the operator asks/);
     assert.match(next, /ros2_install_skill/);
     assert.match(next, /ros2_create_skill/);
     assert.equal(next.split(EMBODIMENT_BEGIN).length, 2);

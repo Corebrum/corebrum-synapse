@@ -12,6 +12,15 @@
 import { MAP_ID_RE, MAP_LABEL_RE } from "@corebrum/core";
 import Configstore from "configstore";
 
+import {
+  getActiveRobotId,
+  readConfigObject,
+  readRobots,
+  setProfileForRobot,
+  writeConfigObject,
+} from "./robot-config.js";
+import { parseProfileObject, type RobotProfile } from "./robot-profile.js";
+
 export const CLOUD_REST = "https://cloud.corebrum.com";
 export const CLOUD_WSS = "wss://cloud.corebrum.com";
 
@@ -260,6 +269,8 @@ export interface CreateCloudRobotFields {
   cmdVel?: string;
   rosNamespace?: boolean;
   rosTopics?: Array<{ type: string; topic: string }>;
+  /** Local synapse.profile.v1. Sent only for a robot this account already owns. */
+  profile?: RobotProfile;
 }
 
 export async function createCloudRobot(
@@ -287,6 +298,94 @@ export async function createCloudRobot(
     throw new Error(data.error || `Failed to register robot (HTTP ${response.status})`);
   }
   return data as { id: string; [key: string]: unknown };
+}
+
+function cloudProfile(raw: unknown): RobotProfile | undefined {
+  const parsed = parseProfileObject(raw);
+  if (!parsed || parsed.schema !== "synapse.profile.v1") return undefined;
+  if (parsed.features.length === 0 && Object.keys(parsed.bindings).length === 0) return undefined;
+  return parsed;
+}
+
+function profileKey(profile: RobotProfile): string {
+  const bindings = Object.fromEntries(
+    Object.entries(profile.bindings).sort(([a], [b]) => a.localeCompare(b)),
+  );
+  return JSON.stringify({
+    schema: profile.schema,
+    features: [...profile.features].sort(),
+    bindings,
+  });
+}
+
+/** Local profile wins when both exist. A missing local profile is filled from Cloud. */
+export function profileSyncDecision(
+  local: RobotProfile | undefined,
+  remote: RobotProfile | undefined,
+): "push" | "pull" | "none" {
+  if (local && (!remote || profileKey(local) !== profileKey(remote))) return "push";
+  if (!local && remote) return "pull";
+  return "none";
+}
+
+function activeLocalProfile(): RobotProfile | undefined {
+  const obj = readConfigObject();
+  const { robots } = readRobots(obj);
+  const id = getActiveRobotId(obj);
+  return (robots.find((robot) => robot.id === id) ?? robots[0])?.profile;
+}
+
+/**
+ * Copy the hardware profile to or from the signed-in Cloud robot.
+ * A 401 or 404 leaves the local file alone and does not create a robot.
+ */
+export async function syncSignedInRobotProfile(): Promise<"push" | "pull" | "none"> {
+  const robotId = getRobotId();
+  const apiToken = getApiToken();
+  if (!robotId || !apiToken) return "none";
+  let remote: RobotProfile | undefined;
+  try {
+    const response = await fetch(`${CLOUD_REST}/robot/${robotId}`, {
+      headers: {
+        "Content-Type": "application/json",
+        api_token: apiToken,
+        Authorization: `Bearer ${apiToken}`,
+      },
+    });
+    if (!response.ok) return "none";
+    const data = (await response.json()) as { profile?: unknown };
+    remote = cloudProfile(data.profile);
+  } catch {
+    return "none";
+  }
+
+  const local = activeLocalProfile();
+  const action = profileSyncDecision(local, remote);
+  if (action === "push" && local) {
+    await fetch(`${CLOUD_REST}/robots/${encodeURIComponent(robotId)}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        api_token: apiToken,
+        Authorization: `Bearer ${apiToken}`,
+      },
+      body: JSON.stringify({ profile: local }),
+    });
+    return "push";
+  }
+  if (action === "pull" && remote) {
+    const obj = readConfigObject();
+    const id = getActiveRobotId(obj) ?? readRobots(obj).robots[0]?.id;
+    if (!id) return "none";
+    setProfileForRobot(id, remote, obj);
+    writeConfigObject(obj);
+    return "pull";
+  }
+  return "none";
+}
+
+export function localRobotProfile(): RobotProfile | undefined {
+  return activeLocalProfile();
 }
 
 export function maskToken(token: string): string {

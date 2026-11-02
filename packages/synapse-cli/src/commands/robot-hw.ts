@@ -29,6 +29,7 @@ import {
   getRobotId,
   setApiToken,
   setRobotId,
+  syncSignedInRobotProfile,
 } from "../util/robot-cloud-config.js";
 import { err, info, isTty, ok, warn } from "../util/logger.js";
 
@@ -125,6 +126,13 @@ export async function connectCommand(opts: { server?: string }): Promise<void> {
   }
 
   const id = await ensureRobotId();
+  try {
+    const synced = await syncSignedInRobotProfile();
+    if (synced === "push") info("Uploaded the hardware profile to Corebrum Cloud.");
+    if (synced === "pull") info("Saved the hardware profile from Corebrum Cloud.");
+  } catch {
+    warn("Could not sync the hardware profile with Corebrum Cloud.");
+  }
 
   const args = ["--max-old-space-size=1024", "--expose-gc", comms];
   if (opts.server) {

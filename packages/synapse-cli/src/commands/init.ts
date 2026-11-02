@@ -50,6 +50,7 @@ import {
   openclawConfigExists,
   readSynapseContractTools,
 } from "../util/openclaw-config.js";
+import { ensureHardwareProfile, realsensePresent } from "../util/infer-active-profile.js";
 import { ensureProfilesExist, switchMode } from "../util/profiles.js";
 import { writeState } from "../util/state.js";
 import { isWorkspaceBuilt, isWorkspaceInstalled, runPnpmInstall, writeWorkspaceNodeAbi } from "../util/workspace.js";
@@ -269,6 +270,17 @@ export async function initCommand(opts: InitOptions): Promise<void> {
     }
   } else {
     ok("Robot config already exists at ~/.synapse/config.json (skip).");
+  }
+
+  // Step: hardware profile. Verbs stay unfiltered until this exists.
+  // RealSense on the USB bus adds camera + depth; a mobile body adds base.
+  {
+    const profile = ensureHardwareProfile({ realsense: realsensePresent() });
+    if (profile.applied) {
+      ok(
+        `Hardware profile: ${profile.features.join(", ") || "none"}.`,
+      );
+    }
   }
 
   // Step: Corebrum Cloud login + register (skippable for local-only).

@@ -14,6 +14,7 @@ import {
   ensureRobotId,
   getApiToken,
   isCloudRobotRegistered,
+  localRobotProfile,
 } from "../util/robot-cloud-config.js";
 import { dim, err, header, info, ok, warn } from "../util/logger.js";
 
@@ -177,6 +178,7 @@ export async function registerCommand(opts: RegisterOptions = {}): Promise<void>
       wheelDiameter,
       wheelWidth,
       wheelBetween,
+      profile: localRobotProfile(),
     });
     ok(`Registered robot "${name}" (${robot.id}).`);
     dim(`  camera=${camera}  compute=${compute}`);
