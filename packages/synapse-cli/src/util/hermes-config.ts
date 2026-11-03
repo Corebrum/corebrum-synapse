@@ -9,6 +9,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, isAbsolute, join, resolve } from "node:path";
 
+import { stripLegacyHermesMcpBlock } from "./legacy-agenticros.js";
 import { resolveRosWrapper } from "./mcp-launch.js";
 
 export interface HermesSynapseConfig {
@@ -71,7 +72,7 @@ export function upsertSynapseBlock(existingContent: string | null, block: string
     return trimmedBlock;
   }
 
-  const lines = existingContent.split("\n");
+  const lines = stripLegacyHermesMcpBlock(existingContent).split("\n");
   const mcpIdx = lines.findIndex((l) => l.trim() === MCP_SERVERS_KEY);
   if (mcpIdx < 0) {
     const sep = lines.length > 0 && lines[lines.length - 1]?.trim() !== "" ? "\n" : "";

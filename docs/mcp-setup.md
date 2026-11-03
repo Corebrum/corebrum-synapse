@@ -28,6 +28,8 @@ synapse doctor
 
 Every entry uses an **absolute path** to the MCP server binary and leaves `SYNAPSE_ROBOT_NAMESPACE` empty so `synapse mode real|sim` drives the active robot namespace.
 
+Setup also removes leftover **AgenticROS** attachments from a rename: `mcpServers.agenticros`, `mcp__agenticros__*` / `mcp(agenticros/*)` allow rules, the old embodiment block, `~/.cursor/rules/agenticros.mdc`, the Antigravity `agenticros` skill, and the OpenClaw `agenticros` plugin entry. Agents keep only the Synapse MCP server.
+
 ## Flags
 
 ### `synapse mcp setup`

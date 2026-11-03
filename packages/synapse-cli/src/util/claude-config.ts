@@ -11,6 +11,7 @@ import { homedir, platform } from "node:os";
 import { dirname, isAbsolute, join, resolve } from "node:path";
 
 import { mcpShellLine } from "./mcp-launch.js";
+import { stripLegacyAllowRules, stripLegacyMcpServer } from "./legacy-agenticros.js";
 
 export type ClaudeConfigTarget = "project" | "desktop" | "user";
 
@@ -105,6 +106,7 @@ export function upsertSynapseMcpJson(
       ? { ...(root["mcpServers"] as Record<string, unknown>) }
       : {};
 
+  stripLegacyMcpServer(servers);
   servers[SYNAPSE_SERVER_KEY] = serverEntry;
   root["mcpServers"] = servers;
 
@@ -143,7 +145,9 @@ export function upsertClaudeMcpAllowRule(existingContent: string | null): string
     root["permissions"] && typeof root["permissions"] === "object" && !Array.isArray(root["permissions"])
       ? { ...(root["permissions"] as Record<string, unknown>) }
       : {};
-  const allow = Array.isArray(permissions["allow"]) ? [...permissions["allow"]] : [];
+  const allow = stripLegacyAllowRules(
+    Array.isArray(permissions["allow"]) ? [...permissions["allow"]] : [],
+  );
   if (!allow.includes(CLAUDE_MCP_ALLOW_RULE)) {
     allow.push(CLAUDE_MCP_ALLOW_RULE);
   }

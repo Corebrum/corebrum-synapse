@@ -18,6 +18,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, isAbsolute, join, resolve } from "node:path";
 
+import { stripLegacyAllowRules, stripLegacyMcpServer } from "./legacy-agenticros.js";
 import { resolveRosWrapper } from "./mcp-launch.js";
 
 export interface AgySynapseConfig {
@@ -135,6 +136,7 @@ export function upsertAgyMcpJson(
       ? { ...(root["mcpServers"] as Record<string, unknown>) }
       : {};
 
+  stripLegacyMcpServer(servers);
   servers[SYNAPSE_SERVER_KEY] = serverEntry;
   root["mcpServers"] = servers;
 
@@ -182,7 +184,9 @@ export function upsertAgyMcpAllowRule(existingContent: string | null): string {
       ? { ...(root["permissions"] as Record<string, unknown>) }
       : {};
 
-  const allow = Array.isArray(permissions["allow"]) ? [...permissions["allow"]] : [];
+  const allow = stripLegacyAllowRules(
+    Array.isArray(permissions["allow"]) ? [...permissions["allow"]] : [],
+  );
   if (!allow.includes(AGY_MCP_ALLOW_RULE)) {
     allow.push(AGY_MCP_ALLOW_RULE);
   }

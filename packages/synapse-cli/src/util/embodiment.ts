@@ -7,6 +7,8 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
 
+import { stripLegacyEmbodiment } from "./legacy-agenticros.js";
+
 export const EMBODIMENT_BEGIN = "<!-- synapse-embodiment -->";
 export const EMBODIMENT_END = "<!-- /synapse-embodiment -->";
 
@@ -27,7 +29,7 @@ export function embodimentBlock(): string {
 /** Insert or replace the embodiment block. Other text in the file stays. */
 export function upsertEmbodiment(existing: string | null): string {
   const block = embodimentBlock();
-  const text = existing ?? "";
+  const text = stripLegacyEmbodiment(existing ?? "");
   const begin = text.indexOf(EMBODIMENT_BEGIN);
   const end = text.indexOf(EMBODIMENT_END);
   if (begin >= 0 && end > begin) {
