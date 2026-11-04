@@ -2,10 +2,6 @@
 
 This project was previously known as AgenticROS.
 
-
-This project was previously known as Corebrum Synapse.
-
-
 Control a TurtleBot3 in Gazebo simulation using natural language through WhatsApp, Telegram, Discord, or Slack.
 
 ## Prerequisites

@@ -2,10 +2,6 @@
 
 This project was previously known as AgenticROS.
 
-
-This project was previously known as Corebrum Synapse.
-
-
 A minimal **single-robot** walkthrough for Corebrum Synapse mission orchestration: install the Find Object skill, confirm capabilities, then run a two-step *find → approach* mission via natural language or a declarative plan.
 
 ## What you will see

@@ -2,10 +2,6 @@
 
 This project was previously known as AgenticROS.
 
-
-This project was previously known as Corebrum Synapse.
-
-
 Canonical package: **[@corebrum/navigate-through-poses](https://www.npmjs.com/package/@corebrum/navigate-through-poses)** · [GitHub](https://github.com/Corebrum/corebrum-skill-navigate-through-poses).
 
 ## Sim walkthrough

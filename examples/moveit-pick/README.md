@@ -2,10 +2,6 @@
 
 This project was previously known as AgenticROS.
 
-
-This project was previously known as Corebrum Synapse.
-
-
 Canonical package: **[@corebrum/moveit-pick](https://www.npmjs.com/package/@corebrum/moveit-pick)** · [GitHub](https://github.com/Corebrum/corebrum-skill-moveit-pick).
 
 ```bash

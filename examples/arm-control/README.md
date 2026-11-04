@@ -2,10 +2,6 @@
 
 This project was previously known as AgenticROS.
 
-
-This project was previously known as Corebrum Synapse.
-
-
 Control a robotic arm through natural language commands via messaging apps.
 
 ## Status

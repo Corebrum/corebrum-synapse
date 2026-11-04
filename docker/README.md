@@ -2,10 +2,6 @@
 
 This project was previously known as AgenticROS.
 
-
-This project was previously known as Corebrum Synapse.
-
-
 Run ROS2, rosbridge, and (optionally) Gazebo simulation in containers so you don’t need ROS installed on your host.
 
 ## Quick start (no ROS on host)

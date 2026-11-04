@@ -2,10 +2,6 @@
 
 This project was previously known as AgenticROS.
 
-
-This project was previously known as Corebrum Synapse.
-
-
 Manage a fleet of robots performing patrol missions through a single chat interface.
 
 ## Status

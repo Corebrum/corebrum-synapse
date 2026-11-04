@@ -2,10 +2,6 @@
 
 This project was previously known as AgenticROS.
 
-
-This project was previously known as Corebrum Synapse.
-
-
 Canonical package: **[corebrum-skill-navigate-to](https://github.com/Corebrum/corebrum-skill-navigate-to)** (`@corebrum/navigate-to`).
 
 ## Sim walkthrough (Gazebo AMR + Nav2)

@@ -2,10 +2,6 @@
 
 This project was previously known as AgenticROS.
 
-
-This project was previously known as Corebrum Synapse.
-
-
 ```bash
 npx @corebrum/synapse skills install @corebrum/start-slam
 # or: npx @corebrum/synapse skills install chrismatthieu/start-slam

@@ -2,10 +2,6 @@
 
 This project was previously known as AgenticROS.
 
-
-This project was previously known as Corebrum Synapse.
-
-
 Canonical package: **[@corebrum/dock-to-charger](https://www.npmjs.com/package/@corebrum/dock-to-charger)** · [GitHub](https://github.com/Corebrum/corebrum-skill-dock-to-charger).
 
 ```bash

@@ -2,10 +2,6 @@
 
 This project was previously known as AgenticROS.
 
-
-This project was previously known as Corebrum Synapse.
-
-
 Canonical package: **[corebrum-skill-explore](https://github.com/Corebrum/corebrum-skill-explore)** (`@corebrum/explore`).
 
 Frontier coverage (`explore`) and safe wandering (`wander`). The on-robot [`synapse_explore`](../../ros2_ws/src/synapse_explore) node sends Nav2 `NavigateToPose` goals; obstacle avoidance stays in Nav2. Pair with [`@corebrum/start-slam`](../start-slam/README.md) to persist an RTAB-Map database.

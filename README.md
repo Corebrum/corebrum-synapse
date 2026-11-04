@@ -2,10 +2,6 @@
 
 This project was previously known as AgenticROS.
 
-
-This project was previously known as Corebrum Synapse.
-
-
 ```text
   ____                                   
  / ___| _   _ _ __   __ _ _ __  ___  ___ 
