@@ -57,10 +57,18 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, isAbsolute, join } from "node:path";
 import { homedir } from "node:os";
 import {
+  removeLegacyAgySkill,
+  removeLegacyCursorRule,
+  stripLegacyOpenclawPlugin,
+} from "./legacy-agenticros.js";
+import {
   ensureToolsAlsoAllow,
   isSynapseOpenclawPluginInstalled,
   openclawConfigExists,
+  openclawConfigPath,
+  readOpenclawConfig,
   readSynapseContractTools,
+  writeOpenclawConfig,
 } from "./openclaw-config.js";
 import { getCliPaths } from "./paths.js";
 
@@ -217,6 +225,7 @@ export function writeCursorMcpConfig(mcpEntry: string): string {
   mkdirSync(dirname(path), { recursive: true });
   writeFileSync(path, upsertSynapseMcpJson(existing, entry), "utf8");
   writeCursorRule();
+  removeLegacyCursorRule();
   return path;
 }
 
@@ -304,6 +313,11 @@ async function setupOpenClaw(repoRoot: string | undefined, quiet: boolean): Prom
     }
   }
   if (openclawConfigExists()) {
+    const cfg = readOpenclawConfig();
+    if (cfg && stripLegacyOpenclawPlugin(cfg)) {
+      writeOpenclawConfig(cfg);
+      written.push(openclawConfigPath());
+    }
     const tools = readSynapseContractTools(repoRoot ?? getCliPaths().repoRoot);
     if (tools) ensureToolsAlsoAllow(tools);
   }
@@ -373,6 +387,7 @@ export async function mcpSetupCommand(opts: McpSetupOptions = {}): Promise<void>
     const settingsPath = globalAgySettingsPath();
     writeAgyMcpAllowRule(settingsPath);
     written.push(settingsPath);
+    removeLegacyAgySkill();
   }
 
   if (hosts.includes("cursor")) {

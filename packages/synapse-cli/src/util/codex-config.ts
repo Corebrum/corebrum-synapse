@@ -10,6 +10,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, isAbsolute, join, resolve } from "node:path";
 
+import { stripLegacyCodexMcpBlock } from "./legacy-agenticros.js";
 import { mcpShellLine } from "./mcp-launch.js";
 
 export type CodexConfigScope = "global" | "project";
@@ -77,7 +78,7 @@ export function upsertSynapseBlock(existingContent: string | null, block: string
     return trimmedBlock;
   }
 
-  const lines = existingContent.split("\n");
+  const lines = stripLegacyCodexMcpBlock(existingContent).split("\n");
   const out: string[] = [];
   let i = 0;
   let replaced = false;
