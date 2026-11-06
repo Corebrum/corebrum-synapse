@@ -8,6 +8,7 @@
  *   eyes     /tmp/synapse-eyes.log    (robot face display)
  *   desktop  /tmp/synapse-desktop.log (Hyprland remote desktop)
  *   motors   /tmp/synapse-motors.log  (start motors helper)
+ *   battery  /tmp/synapse-battery.log (Linux sysfs → BatteryState)
  *   comms    /tmp/synapse-comms.log   (cloud connect)
  *   gateway  journalctl --user-unit openclaw-gateway.service
  *
@@ -21,12 +22,23 @@ import { execa } from "execa";
 import { logPath, type ManagedProcess } from "../util/pidfile.js";
 import { colors, header, info, warn } from "../util/logger.js";
 
-type LogTarget = "camera" | "mcp" | "sim" | "rosbridge" | "eyes" | "desktop" | "gateway" | "motors" | "comms";
+type LogTarget =
+  | "camera"
+  | "mcp"
+  | "sim"
+  | "rosbridge"
+  | "eyes"
+  | "desktop"
+  | "gateway"
+  | "motors"
+  | "battery"
+  | "comms";
 
-const TARGETS: LogTarget[] = ["camera", "mcp", "sim", "rosbridge", "eyes", "desktop", "motors", "comms", "gateway"];
+const TARGETS: LogTarget[] = ["camera", "mcp", "sim", "rosbridge", "eyes", "desktop", "motors", "battery", "comms", "gateway"];
 
 const EXTRA_LOG_PATH: Partial<Record<LogTarget, string>> = {
   motors: "/tmp/synapse-motors.log",
+  battery: "/tmp/synapse-battery.log",
   comms: "/tmp/synapse-comms.log",
 };
 

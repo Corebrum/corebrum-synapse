@@ -26,6 +26,11 @@ CAMERA_PID_FILE=/tmp/synapse-camera.pid
 source "$REPO_ROOT/scripts/lib/synapse-banner.sh"
 # shellcheck source=lib/realsense.sh
 source "$REPO_ROOT/scripts/lib/realsense.sh"
+# shellcheck source=lib/battery.sh
+source "$REPO_ROOT/scripts/lib/battery.sh"
+
+BATTERY_LOG=/tmp/synapse-battery.log
+BATTERY_PID_FILE=/tmp/synapse-battery.pid
 
 start_motor_controller() {
     if [[ "${SYNAPSE_NO_MOTORS:-}" == "1" ]]; then
@@ -87,6 +92,8 @@ if ! pnpm --filter '@corebrum/claude-code...' --workspace-concurrency=1 build; t
 fi
 
 start_motor_controller
+
+start_battery_publisher
 
 echo ""
 echo "Demo ready. Launch Claude Code from $REPO_ROOT — .mcp.json starts the MCP server."

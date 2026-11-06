@@ -20,7 +20,7 @@ import {
   robotPkgHasInlineStatus,
   robotPkgHasRuntimeDeps,
 } from "../util/robot-pkg.js";
-import { clearPid, killPid } from "../util/pidfile.js";
+import { clearPid, killPid, writePid } from "../util/pidfile.js";
 import { getCliPaths, resolveScriptPath } from "../util/paths.js";
 import { detectRosDistro } from "../util/env.js";
 import { getActiveRobotId, readConfigObject, readRobots } from "../util/robot-config.js";
@@ -442,6 +442,54 @@ export async function stopRealsenseCommand(opts: { quiet?: boolean } = {}): Prom
   if (!opts.quiet) ok("Robot realsense stopped.");
 }
 
+export async function startBatteryCommand(): Promise<void> {
+  const script = resolveScriptPath("start_battery.sh");
+  if (!existsSync(script)) {
+    err(`start_battery.sh not found at ${script}`);
+    err("Upgrade the CLI (`npm i -g synapse@latest`) or run `synapse init --force` to refresh ~/synapse/scripts.");
+    process.exit(1);
+  }
+  const ros = detectRosDistro();
+  if (!ros.distro) {
+    err("No ROS 2 installation detected under /opt/ros/. Install ROS 2 first.");
+    process.exit(1);
+  }
+  try {
+    await execa("bash", [script, ros.distro], { stdio: "inherit" });
+    ok("Battery publisher started (or skipped when no battery is present).");
+  } catch (e) {
+    warn(`start battery failed: ${e instanceof Error ? e.message : String(e)}`);
+    warn("See /tmp/synapse-battery.log (or: synapse logs battery)");
+    process.exit(1);
+  }
+  // Record the running node pid so `synapse status` and `synapse down` see it.
+  try {
+    const { stdout, exitCode } = await execa("pgrep", ["-f", "synapse_bringup.linux_sysfs_battery"], {
+      reject: false,
+    });
+    if (exitCode === 0 && stdout.trim()) {
+      const pid = Number.parseInt(stdout.trim().split("\n")[0] ?? "", 10);
+      if (Number.isFinite(pid) && pid > 0) writePid("battery", pid);
+    }
+  } catch {
+    // pgrep missing or no match — status will still use hw pattern when running
+  }
+}
+
+export async function stopBatteryCommand(opts: { quiet?: boolean } = {}): Promise<void> {
+  const script = resolveScriptPath("stop_battery.sh");
+  if (existsSync(script)) {
+    await execa("bash", [script], {
+      stdio: opts.quiet ? "ignore" : "inherit",
+      reject: false,
+    });
+  } else {
+    await pkill("synapse_bringup.linux_sysfs_battery");
+  }
+  clearPid("battery");
+  if (!opts.quiet) ok("Battery publisher stopped.");
+}
+
 function configuredNamespace(): string {
   const obj = readConfigObject();
   const { robots } = readRobots(obj);
@@ -603,8 +651,11 @@ export async function startServiceCommand(
     case "mapping":
       await startMappingCommand();
       break;
+    case "battery":
+      await startBatteryCommand();
+      break;
     default:
-      err(`Unknown start target "${target}". Use motors | realsense | camera | mapping.`);
+      err(`Unknown start target "${target}". Use motors | realsense | camera | mapping | battery.`);
       process.exit(1);
   }
 }
@@ -633,8 +684,11 @@ export async function stopServiceCommand(target: string): Promise<void> {
     case "eyes":
       await stopEyesCommand();
       break;
+    case "battery":
+      await stopBatteryCommand();
+      break;
     default:
-      err(`Unknown stop target "${target}". Use motors | realsense | camera | mapping | eyes.`);
+      err(`Unknown stop target "${target}". Use motors | realsense | camera | mapping | eyes | battery.`);
       process.exit(1);
   }
 }

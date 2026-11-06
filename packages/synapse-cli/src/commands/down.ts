@@ -1,7 +1,7 @@
 /**
  * `synapse down` - stop Corebrum Synapse components this CLI brought up.
  *
- * Kills processes recorded in /tmp/synapse-*.pid (sim, camera, mcp,
+ * Kills processes recorded in /tmp/synapse-*.pid (sim, camera, battery, mcp,
  * rosbridge, eyes) plus stray gz / rviz / parameter_bridge.  The OpenClaw
  * gateway service is a persistent host service used by Claude Code / MCP -
  * leave it running unless the user explicitly passes --stop-gateway.
@@ -19,7 +19,7 @@ export interface DownOptions {
   stopGateway?: boolean;
 }
 
-const STOPPABLE: ManagedProcess[] = ["sim", "mcp", "rosbridge", "camera", "eyes", "desktop"];
+const STOPPABLE: ManagedProcess[] = ["sim", "mcp", "rosbridge", "camera", "battery", "eyes", "desktop"];
 
 export async function downCommand(opts: DownOptions): Promise<void> {
   header("Corebrum Synapse - shutting down");
@@ -59,6 +59,7 @@ export async function downCommand(opts: DownOptions): Promise<void> {
   }
   await pkillAndWait(["gz sim", "ign gazebo", "rviz2", "parameter_bridge"]);
   await pkillAndWait(["ros2 launch rosbridge_server"]);
+  await pkillAndWait(["synapse_bringup.linux_sysfs_battery"]);
 
   // Motor controllers started by `up real` / `synapse start motors`.
   // Leave cloud comms.js alone — use `synapse disconnect` for that.

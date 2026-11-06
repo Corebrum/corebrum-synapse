@@ -14,7 +14,8 @@ export type ManagedProcess =
   | "mcp"
   | "rosbridge"
   | "eyes"
-  | "desktop";
+  | "desktop"
+  | "battery";
 
 function pidPath(name: ManagedProcess): string {
   return `${PID_DIR}/synapse-${name}.pid`;

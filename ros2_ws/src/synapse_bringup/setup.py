@@ -20,6 +20,7 @@ setup(
         "console_scripts": [
             "cmd_vel_relay = synapse_bringup.cmd_vel_relay:main",
             "camera_stamp_fix = synapse_bringup.camera_stamp_fix:main",
+            "linux_sysfs_battery = synapse_bringup.linux_sysfs_battery:main",
         ],
     },
     zip_safe=True,

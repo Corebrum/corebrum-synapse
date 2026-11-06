@@ -436,7 +436,7 @@ program
 program
   .command("start <target>")
   .description(
-    "Start an on-robot service. target = motors | realsense | camera | mapping",
+    "Start an on-robot service. target = motors | realsense | camera | mapping | battery",
   )
   .option(
     "-b, --backend <name>",
@@ -506,7 +506,7 @@ program
 program
   .command("stop <target>")
   .description(
-    "Stop an on-robot service. target = motors | realsense | camera | mapping | eyes",
+    "Stop an on-robot service. target = motors | realsense | camera | mapping | eyes | battery",
   )
   .action(async (target: string) => {
     await stopServiceCommand(target);
@@ -527,7 +527,7 @@ program
   });
 
 // robotics-style aliases: `synapse motors start` / `synapse camera stop`
-for (const service of ["motors", "realsense", "camera"] as const) {
+for (const service of ["motors", "realsense", "camera", "battery"] as const) {
   const svc = program.command(service).description(`Alias for start/stop ${service}`);
   svc
     .command("start")
@@ -586,7 +586,7 @@ for (const service of ["motors", "realsense", "camera"] as const) {
 program
   .command("logs [target]")
   .description(
-    "Tail logs. target = camera | mcp | gateway | sim | eyes | desktop | motors | comms (default: print available logs).",
+    "Tail logs. target = camera | mcp | gateway | sim | eyes | desktop | motors | battery | comms (default: print available logs).",
   )
   .option("-f, --follow", "Tail the log (tail -F). Default prints last N lines and exits.", false)
   .option("-n, --lines <n>", "Number of lines from the end to start at", "200")

@@ -87,6 +87,9 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 COLCON_WS="${COLCON_WS:-$REPO_ROOT/ros2_ws}"
 
+# shellcheck source=../lib/battery.sh
+source "$SCRIPT_DIR/../lib/battery.sh"
+
 LOG_FILE="/tmp/synapse-sim.log"
 PID_FILE="/tmp/synapse-sim.pid"
 
@@ -257,6 +260,8 @@ start_sim_rosbridge() {
   disown || true
 }
 start_sim_rosbridge
+
+start_battery_publisher
 
 log "Logging to $LOG_FILE"
 log "ros2 launch synapse_sim $LAUNCH_FILE ${LAUNCH_ARGS[*]}"
