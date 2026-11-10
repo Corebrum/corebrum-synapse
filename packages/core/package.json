@@ -51,7 +51,7 @@
     "pack:dry": "npm pack --dry-run"
   },
   "dependencies": {
-    "@eclipse-zenoh/zenoh-ts": "^1.9.0",
+    "@eclipse-zenoh/zenoh-ts": "1.10.2",
     "@foxglove/cdr": "^3.5.0",
     "@foxglove/rosmsg": "^4.2.2",
     "@foxglove/rosmsg2-serialization": "^3.1.0",

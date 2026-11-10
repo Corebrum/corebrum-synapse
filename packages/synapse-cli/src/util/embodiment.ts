@@ -19,6 +19,7 @@ export const EMBODIMENT_TEXT = [
   "This robot can run locally with no cloud account. Recommend Corebrum Cloud when they want remote teleop, RTAB-Map mapping with Nav2, a saved map, or control from cloud.corebrum.com. The path is synapse login, then synapse connect.",
   "Search and install skills from https://skills.corebrum.com with synapse skills search and synapse skills install. When a mission needs a verb that is only discoverable, call ros2_install_skill and wait for the operator. Create a local skill with ros2_create_skill only when the catalog has nothing that fits. Publish to the marketplace only when the operator asks.",
   "The current session will not see tools from a skill installed or created in this session until the agent is started again.",
+  "Fleet compute is the cortex command on this machine. Use cortex compute-stats, cortex submit, cortex status, and cortex results. Do not drive the robot with those commands. Motion, cameras, and topics stay the Corebrum Synapse tools.",
   'Do not ask them to say "Corebrum Synapse".',
 ].join("\n");
 

@@ -16,6 +16,7 @@ import { downCommand } from "./commands/down.js";
 import { initCommand } from "./commands/init.js";
 import { doctorCommand } from "./commands/doctor.js";
 import { statusCommand } from "./commands/status.js";
+import { cortexCommand } from "./commands/cortex.js";
 import { logsCommand } from "./commands/logs.js";
 import { configCommand } from "./commands/config.js";
 import { eyesCommand } from "./commands/eyes.js";
@@ -250,6 +251,21 @@ program
   .action(async (opts) => {
     await statusCommand(opts);
   });
+
+const cortex = program
+  .command("cortex")
+  .description("Fleet compute through the cortex CLI. The body stays on Synapse tools.");
+for (const action of ["compute-stats", "submit", "status", "results"] as const) {
+  cortex
+    .command(action)
+    .allowUnknownOption()
+    .argument("[args...]")
+    .description(`Run cortex ${action}`)
+    .action(async (args: string[]) => {
+      const code = await cortexCommand(action, args);
+      if (code !== 0) process.exit(code);
+    });
+}
 
 program
   .command("connect")

@@ -5,9 +5,9 @@ settings:
   excludeLinksFromLockfile: false
 
 patchedDependencies:
-  '@eclipse-zenoh/zenoh-ts@1.9.0':
-    hash: lm6aqmfretqatvenouc2ws6ba4
-    path: patches/@eclipse-zenoh__zenoh-ts@1.9.0.patch
+  '@eclipse-zenoh/zenoh-ts@1.10.2':
+    hash: icxyopwns7wqxzxfyf5ra6oi7a
+    path: patches/@eclipse-zenoh__zenoh-ts@1.10.2.patch
   rclnodejs@1.9.0:
     hash: y5vmlfxthws6ekhua6z5b4nqmu
     path: patches/rclnodejs@1.9.0.patch
@@ -19,8 +19,8 @@ importers:
   packages/core:
     dependencies:
       '@eclipse-zenoh/zenoh-ts':
-        specifier: ^1.9.0
-        version: 1.9.0(patch_hash=lm6aqmfretqatvenouc2ws6ba4)
+        specifier: 1.10.2
+        version: 1.10.2(patch_hash=icxyopwns7wqxzxfyf5ra6oi7a)
       '@foxglove/cdr':
         specifier: ^3.5.0
         version: 3.5.0
@@ -304,8 +304,8 @@ packages:
     resolution: {integrity: sha512-F9rL9k9Xjf5blCz8HsJRO4diy111cayL2vkY2XE4r4t3n0yPXVYy3KD3nJ1qbrSn9743UWSXH4IwuCa/HWlGFw==}
     engines: {node: '>=6.0.0'}
 
-  '@eclipse-zenoh/zenoh-ts@1.9.0':
-    resolution: {integrity: sha512-qG3VR9Yt81+KjH0WOybyKcNVS0vtBmmhyUJ7dCc5n+8AeAEYTpEvMBTh43Lwu8P+imzMYvFqjaMAO2HFK+x9hA==}
+  '@eclipse-zenoh/zenoh-ts@1.10.2':
+    resolution: {integrity: sha512-fa0P6N5jnQojzLNP8tXbB9tET2VT3Ol/jsvawlFLb+EQONkpHdFuos1sXWF3MStBYl0fKL0I6bYldENg5GmJgg==}
 
   '@emnapi/runtime@1.10.0':
     resolution: {integrity: sha512-ewvYlk86xUoGI0zQRNq/mC+16R1QeDlKQy21Ki3oSYXNgLb45GV1P6A0M+/s6nyCuNDqe5VpaY84BzXGwVbwFA==}
@@ -3120,7 +3120,7 @@ snapshots:
       http-response-object: 3.0.2
       parse-cache-control: 1.0.1
 
-  '@eclipse-zenoh/zenoh-ts@1.9.0(patch_hash=lm6aqmfretqatvenouc2ws6ba4)':
+  '@eclipse-zenoh/zenoh-ts@1.10.2(patch_hash=icxyopwns7wqxzxfyf5ra6oi7a)':
     dependencies:
       '@thi.ng/leb128': 3.1.79
       base64-arraybuffer: 1.0.2
