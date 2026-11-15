@@ -62,11 +62,21 @@ export async function ensureRobotId() {
 /**
  * Fetch robot details (compute, camera) from the portal.
  */
+export function readLocalMotorPrefs() {
+  const backend = primary.get("motorBackend");
+  const pins = primary.get("motorPins");
+  return {
+    motorBackend:
+      typeof backend === "string" && backend.trim() ? backend.trim() : undefined,
+    motorPins: typeof pins === "string" && pins.trim() ? pins.trim() : undefined,
+  };
+}
+
 export async function fetchRobotDetails() {
   const robotId = getRobotId();
   const apiToken = getApiToken();
   if (!robotId || !apiToken) {
-    return { camera: undefined, compute: undefined };
+    return { camera: undefined, compute: undefined, motorBackend: undefined };
   }
   try {
     const response = await fetch(`${CLOUD_REST}/robot/${robotId}`, {
@@ -79,8 +89,10 @@ export async function fetchRobotDetails() {
     return {
       camera: data.camera && data.camera !== "" ? data.camera : undefined,
       compute: data.compute && data.compute !== "" ? data.compute : undefined,
+      motorBackend:
+        data.motorBackend && data.motorBackend !== "" ? data.motorBackend : undefined,
     };
   } catch {
-    return { camera: undefined, compute: undefined };
+    return { camera: undefined, compute: undefined, motorBackend: undefined };
   }
 }

@@ -6,8 +6,9 @@
  *   node start-motors.js [-b rpi|firmata|jetson] [-p pins] [-e encoderpins] [-d device]
  *                        [--odom] [--no-odom] [--tpr n]
  *
- * Defaults: Raspberry Pi (portal compute) → motors-rpi5.js; else firmata.
- * Jetson native GPIO is opt-in only via -b jetson (never auto-selected).
+ * Defaults: explicit -b / SYNAPSE_MOTOR_BACKEND / config motorBackend, then portal
+ * compute Raspberry Pi → rpi, portal motorBackend, else Jetson (Tegra) → jetson,
+ * else firmata.
  *
  * The controller is only reported as started if it is still alive after a
  * short settle window. Native-addon crashes (common after a Node upgrade)
@@ -20,7 +21,14 @@ import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 import minimist from "minimist";
 
-import { ensureRobotId, getApiToken, fetchRobotDetails } from "./robot-config.js";
+import {
+  ensureRobotId,
+  getApiToken,
+  fetchRobotDetails,
+  readLocalMotorPrefs,
+} from "./robot-config.js";
+import { isJetson } from "./lib/is-jetson.js";
+import { resolveMotorBackend, defaultMotorPins } from "./lib/resolve-motor-backend.js";
 import { spawnDetachedVerified, tailLog } from "./lib/spawn-detached.js";
 
 const execFile = promisify(execFileCb);
@@ -30,23 +38,38 @@ const MOTORS_LOG = "/tmp/synapse-motors.log";
 
 await ensureRobotId();
 void getApiToken();
-const { compute } = await fetchRobotDetails();
+const portal = await fetchRobotDetails();
+const local = readLocalMotorPrefs();
+
+const backend = resolveMotorBackend({
+  argvBackend: argv.b,
+  envBackend: process.env.SYNAPSE_MOTOR_BACKEND,
+  localBackend: local.motorBackend,
+  compute: portal.compute,
+  portalMotorBackend: portal.motorBackend,
+  isJetson,
+});
 
 const rpi = path.join(__dirname, "motors-rpi5.js");
 const firmata = path.join(__dirname, "motors-firmata.js");
-const jetson = path.join(__dirname, "motors-jetson.js");
+const jetsonScript = path.join(__dirname, "motors-jetson.js");
 
-let script = compute === "Raspberry Pi" ? rpi : firmata;
-if (argv.b === "rpi") script = rpi;
-else if (argv.b === "firmata") script = firmata;
-else if (argv.b === "jetson") script = jetson;
+const script =
+  backend === "rpi" ? rpi : backend === "jetson" ? jetsonScript : firmata;
 
 const options = [script];
 if (argv.d) {
   options.push("--device", String(argv.d));
 }
-if (argv.p) {
-  options.push("--pins", String(argv.p));
+const pins =
+  argv.p ??
+  (process.env.SYNAPSE_MOTOR_PINS && String(process.env.SYNAPSE_MOTOR_PINS).trim()
+    ? process.env.SYNAPSE_MOTOR_PINS
+    : undefined) ??
+  local.motorPins ??
+  defaultMotorPins(backend);
+if (pins) {
+  options.push("--pins", String(pins));
 }
 if (argv.e) {
   options.push("--encoderpins", String(argv.e));
@@ -82,7 +105,7 @@ try {
     cwd: __dirname,
     logFile: MOTORS_LOG,
   });
-  console.log(`Motor controller running (${name} pid ${pid}).`);
+  console.log(`Motor controller running (${name} backend=${backend} pid ${pid}).`);
   console.log(`Logs: ${MOTORS_LOG}`);
 } catch (e) {
   const log = e && typeof e === "object" && "log" in e ? String(e.log) : tailLog(MOTORS_LOG);

@@ -15,7 +15,7 @@ import { join } from "node:path";
 import { execa } from "execa";
 
 import { getCliPaths } from "../util/paths.js";
-import { detectRosDistro, hasBin, hasGazeboHarmonic } from "../util/env.js";
+import { detectRosDistro, hasBin, hasGazeboHarmonic, isJetson } from "../util/env.js";
 import { colors, header, ok, warn, err, info } from "../util/logger.js";
 import { activeConfigPath, profilesDir, readActiveMode } from "../util/profiles.js";
 import {
@@ -128,6 +128,39 @@ export async function runDoctorChecks(opts: DoctorOptions = {}): Promise<DoctorR
       label: "ROS 2 not detected",
       severity: "red",
       hint: "Install ROS 2 Humble or Jazzy: https://docs.ros.org/en/humble/Installation.html",
+    });
+  }
+
+  if (isJetson()) {
+    const jetGpioPaths = [
+      "libjetgpio.so",
+      "/usr/local/lib/libjetgpio.so",
+      "/usr/lib/libjetgpio.so",
+      "/usr/lib/aarch64-linux-gnu/libjetgpio.so",
+    ];
+    const jetFound = jetGpioPaths.some((p) => existsSync(p));
+    checks.push({
+      id: "jetgpio",
+      label: jetFound ? "JETGPIO (libjetgpio.so) present" : "JETGPIO not installed",
+      severity: jetFound ? "green" : "red",
+      hint: jetFound
+        ? undefined
+        : "Install from https://github.com/Rubberazer/JETGPIO (v1.2 standalone recommended), then synapse start motors",
+    });
+    let koffiOk = false;
+    try {
+      await import("koffi");
+      koffiOk = true;
+    } catch {
+      koffiOk = false;
+    }
+    checks.push({
+      id: "koffi",
+      label: koffiOk ? "koffi available (Jetson GPIO motors)" : "koffi missing for Jetson GPIO motors",
+      severity: koffiOk ? "green" : "yellow",
+      hint: koffiOk
+        ? undefined
+        : "From the synapse checkout: pnpm install in packages/synapse-robot (koffi is optionalDependency).",
     });
   }
 

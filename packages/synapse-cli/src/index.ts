@@ -456,7 +456,7 @@ program
   )
   .option(
     "-b, --backend <name>",
-    "motors only: rpi | firmata | jetson (jetson is opt-in; never auto-selected)",
+    "motors only: rpi | firmata | jetson (default jetson on Tegra)",
   )
   .option(
     "-p, --pins [list]",

@@ -38,12 +38,14 @@ Robot ID and API token live in `configstore('synapse')`. Legacy values from
 
 Pin maps for L298N (Jetson BOARD, Pi BCM, Firmata) plus encoder `/odom`: **[docs/hardware.md](../../docs/hardware.md)**.
 
-1. Portal `compute === "Raspberry Pi"` → `motors-rpi5.js`
-2. Otherwise → `motors-firmata.js`
-3. Overrides: `-b rpi` | `-b firmata` | `-b jetson`
+1. `-b` / `SYNAPSE_MOTOR_BACKEND` / configstore `motorBackend`
+2. Portal `compute === "Raspberry Pi"` → `motors-rpi5.js`
+3. Portal `motorBackend` when set
+4. Tegra (Jetson) → `motors-jetson.js`
+5. Otherwise → `motors-firmata.js`
 
-`motors-jetson.js` is never auto-selected. It requires system JETGPIO
-(`libjetgpio.so`) and optional npm `koffi`, and often needs root / `/dev/mem`.
+`motors-jetson.js` requires system JETGPIO (`libjetgpio.so`) and optional npm
+`koffi`, and often needs root / `/dev/mem`.
 
 Firmata uses `firmata-io` plus serialport v13 (N-API) rather than the old
 `firmata` meta-package (serialport v8 NAN bindings). Those v8 bindings are

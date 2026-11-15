@@ -2,7 +2,7 @@
  * Environment + system detection helpers shared by doctor, init, and the runners.
  */
 
-import { existsSync, readdirSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { delimiter, join } from "node:path";
 
 /** Preferred order when more than one ROS 2 install is present. */
@@ -101,9 +101,29 @@ export function hasBin(name: string): boolean {
 
 /** Whether we appear to be running on a Jetson (Tegra kernel). */
 export function isJetson(): boolean {
+  const tegraRelease = process.env.SYNAPSE_NV_TEGRA_RELEASE ?? "/etc/nv_tegra_release";
   try {
-    return existsSync("/etc/nv_tegra_release");
+    if (existsSync(tegraRelease)) return true;
   } catch {
-    return false;
+    // ignore
   }
+  const modelPath = process.env.SYNAPSE_DEVICE_TREE_MODEL ?? "/proc/device-tree/model";
+  try {
+    if (existsSync(modelPath)) {
+      const model = readFileSync(modelPath, "utf8").replace(/\0/g, "");
+      if (model.includes("Jetson")) return true;
+    }
+  } catch {
+    // ignore
+  }
+  const compatPath = process.env.SYNAPSE_DEVICE_TREE_COMPATIBLE ?? "/proc/device-tree/compatible";
+  try {
+    if (existsSync(compatPath)) {
+      const compatible = readFileSync(compatPath, "utf8");
+      if (compatible.includes("nvidia,tegra")) return true;
+    }
+  } catch {
+    // ignore
+  }
+  return false;
 }

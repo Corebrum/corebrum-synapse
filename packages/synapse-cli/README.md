@@ -141,8 +141,8 @@ encoders if `-e` is passed).
 | Backend | When | Hardware |
 |---------|------|----------|
 | `rpi` | Default when portal `compute` is Raspberry Pi | Pi GPIO via `@iiot2k/gpiox` |
-| `firmata` | Default for everything else (Radxa, LattePanda, Jetson+Arduino, NUC) | Arduino Firmata serial |
-| `jetson` | **Opt-in only** — never auto-selected | Jetson BOARD pins via JETGPIO + `koffi` |
+| `firmata` | Default on non-Tegra x86/ARM without Pi compute (Radxa, LattePanda, NUC, Jetson+Arduino) | Arduino Firmata serial |
+| `jetson` | **Default on Tegra** unless `-b firmata` or portal `motorBackend` overrides | Jetson BOARD pins via JETGPIO + `koffi` |
 
 **Options:**
 

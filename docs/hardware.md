@@ -56,14 +56,14 @@ Wheel-encoder odometry is implemented on the **Firmata** motor backend only. Jet
 
 
 
-### Alternate compute (instead of Jetson)
+### Alternate compute
 
-Jetson native GPIO is **opt-in** (`-b jetson`). Every other board in this table defaults to **Firmata** unless you pass `-b rpi`.
+On **Tegra (Jetson)**, `synapse start motors` defaults to **native GPIO** (`jetson`) when JETGPIO is installed. Override with `-b firmata` if you use a USB Arduino. Other boards default to **Firmata** unless the portal compute is **Raspberry Pi** (then `rpi`) or you pass `-b`.
 
 
 | Compute                                                                                    | Motor backend                                     | Notes                                                                                   |
 | ------------------------------------------------------------------------------------------ | ------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| [Jetson Orin Nano](https://www.amazon.com/NVIDIA-Jetson-Orin-Nano-Developer/dp/B0BZJTQ5YP) | `-b jetson` (must pass this) or `-b firmata`      | Native: install [JETGPIO](https://github.com/Rubberazer/JETGPIO). Firmata: USB Arduino. |
+| [Jetson Orin Nano](https://www.amazon.com/NVIDIA-Jetson-Orin-Nano-Developer/dp/B0BZJTQ5YP) | **`jetson` on Tegra** (default) or `-b firmata`   | Native: install [JETGPIO](https://github.com/Rubberazer/JETGPIO). Firmata: USB Arduino. |
 | [Raspberry Pi 5](https://www.raspberrypi.com/products/raspberry-pi-5/)                     | `-b rpi` (auto if portal compute is Raspberry Pi) | BCM pin numbers via `@iiot2k/gpiox`.                                                    |
 | [RADXA X4](https://radxa.com/products/x/x4/)                                               | `-b firmata` (default)                            | USB Arduino running StandardFirmata.                                                    |
 | [LattePanda Delta 3](https://www.lattepanda.com/lattepanda-3-delta)                        | `-b firmata` (default)                            | Flash StandardFirmata to the **onboard ATmega32u4** (Arduino Leonardo).                 |
@@ -147,7 +147,7 @@ Jetson 40-pin                         L298N                      motors
   ENA/ENB jumpers ON (enable always high)
 ```
 
-Requires system [JETGPIO](https://github.com/Rubberazer/JETGPIO) (`libjetgpio.so`) and often root / `/dev/mem`. This backend is **never auto-selected**.
+Requires system [JETGPIO](https://github.com/Rubberazer/JETGPIO) (`libjetgpio.so`) and often root / `/dev/mem`. On Tegra, `start-motors.js` selects this backend automatically unless you pass `-b firmata`.
 
 ```bash
 synapse start motors -b jetson -p 16,18,22,26 --odom

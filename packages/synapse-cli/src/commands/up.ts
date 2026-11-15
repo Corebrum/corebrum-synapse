@@ -8,7 +8,6 @@
  * That keeps phase-1 light and the scripts independently usable.
  */
 
-import { existsSync } from "node:fs";
 
 import { select } from "@inquirer/prompts";
 
@@ -19,6 +18,7 @@ import { err, info, ok, warn, withSpinner } from "../util/logger.js";
 import { invokeGatewayTool, isGatewayActive } from "../util/gateway-tools.js";
 import { ensureProfilesExist, readActiveMode, switchMode, type Mode } from "../util/profiles.js";
 import { writeState } from "../util/state.js";
+import { isJetson } from "../util/env.js";
 
 export interface UpOptions {
   target?: string;
@@ -153,11 +153,6 @@ function resolveHeadless(flag: boolean | undefined): boolean {
     return true;
   }
   return false;
-}
-
-/** Detect NVIDIA Jetson / Tegra via the L4T release file. */
-function isJetson(): boolean {
-  return existsSync("/etc/nv_tegra_release");
 }
 
 /**

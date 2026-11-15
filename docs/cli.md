@@ -120,7 +120,7 @@ live in `configstore('synapse')` (`ROBOT_ID`, `API_TOKEN`); legacy
 | `synapse disconnect` | Stop `comms.js`. |
 | `synapse id` | Print (or create) robot ID. |
 | `synapse set --token=… [--id=…]` | Manual credential save (prefer `login`). Run `synapse init` first so connect/motors deps are installed. |
-| `synapse start motors [-b rpi\|firmata\|jetson] [-p pins] [-e enc] [-d device] [--odom] [--no-odom] [--tpr n]` | Start motor controller. Publishes `/odom` when ARC has wheel geometry (or `--odom`). `-e` enables Firmata encoder odom. Jetson GPIO is **opt-in** (`-b jetson` only). Hardware pin maps: [hardware.md](hardware.md). |
+| `synapse start motors [-b rpi\|firmata\|jetson] [-p pins] [-e enc] [-d device] [--odom] [--no-odom] [--tpr n]` | Start motor controller. Publishes `/odom` when ARC has wheel geometry (or `--odom`). `-e` enables Firmata encoder odom. On Tegra, **jetson** is the default backend. Hardware pin maps: [hardware.md](hardware.md). |
 | `synapse stop motors` | Stop all motor backends. |
 | `synapse start realsense [-p\|--pointcloud]` | Start RealSense (recovery preflight + pidfile). |
 | `synapse stop realsense` | Stop RealSense node. |
