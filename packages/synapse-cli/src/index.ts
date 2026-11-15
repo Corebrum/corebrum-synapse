@@ -49,6 +49,7 @@ import {
 } from "./commands/cloud-auth.js";
 import { registerCommand } from "./commands/register.js";
 import { embodimentCommand } from "./commands/embodiment.js";
+import { cloudLinkCommand, cloudSetupCommand } from "./commands/cloud.js";
 import { hiveCommand } from "./commands/hive.js";
 import { remoteCommand } from "./commands/remote.js";
 import { mapsCommand } from "./commands/maps.js";
@@ -407,6 +408,54 @@ program
   .action(async (action: string | undefined, opts: { json?: boolean }) => {
     await gatewayCommand({ action, json: opts.json });
   });
+
+const cloud = program
+  .command("cloud")
+  .description("Corebrum Cloud onboarding: login, link, register, connect.");
+
+cloud
+  .command("setup")
+  .description(
+    "Operator wizard: optional motor drive, login, register or link, connect, whoami.",
+  )
+  .option("--skip-embodiment", "Skip synapse embodiment setup", false)
+  .option("--skip-connect", "Stop after register/link (no comms.js)", false)
+  .option("--register", "Register this machine (skip link menu)", false)
+  .option("--link <id>", "Link to an existing Cloud robot id", "")
+  .option("-y, --yes", "Non-interactive where possible", false)
+  .action(
+    async (opts: {
+      skipEmbodiment?: boolean;
+      skipConnect?: boolean;
+      register?: boolean;
+      link?: string;
+      yes?: boolean;
+    }) => {
+      await cloudSetupCommand({
+        skipEmbodiment: opts.skipEmbodiment === true,
+        skipConnect: opts.skipConnect === true,
+        register: opts.register === true,
+        linkId: opts.link?.trim() || undefined,
+        yes: opts.yes === true,
+      });
+    },
+  );
+
+cloud
+  .command("link")
+  .description("Set local ROBOT ID to a robot on your Cloud account.")
+  .option("--robot <id>", "Cloud robot UUID")
+  .option("--no-pull", "Do not copy compute/motorBackend to local prefs", false)
+  .option("-y, --yes", "Skip confirmation when replacing local id", false)
+  .action(
+    async (opts: { robot?: string; noPull?: boolean; yes?: boolean }) => {
+      await cloudLinkCommand({
+        robotId: opts.robot,
+        noPull: opts.noPull === true,
+        yes: opts.yes === true,
+      });
+    },
+  );
 
 program
   .command("register")

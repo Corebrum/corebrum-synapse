@@ -105,3 +105,21 @@ export function normalizeBackend(value: unknown): MotorBackend | undefined {
   const v = value.trim().toLowerCase() as MotorBackend;
   return (MOTOR_BACKENDS as readonly string[]).includes(v) ? v : undefined;
 }
+
+/** Apply Cloud robot fields to local embodiment prefs (additive). */
+export function pullEmbodimentFromCloud(record: {
+  compute?: string;
+  motorBackend?: string;
+}): void {
+  const current = readLocalEmbodimentPrefs();
+  const next: LocalEmbodimentPrefs = { ...current };
+  if (record.compute?.trim()) next.compute = record.compute.trim();
+  const backend = normalizeBackend(record.motorBackend);
+  if (backend) next.motorBackend = backend;
+  if (
+    next.compute !== current.compute ||
+    next.motorBackend !== current.motorBackend
+  ) {
+    setLocalEmbodimentPrefs(next);
+  }
+}

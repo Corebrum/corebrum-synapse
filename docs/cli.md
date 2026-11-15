@@ -116,6 +116,8 @@ live in `configstore('synapse')` (`ROBOT_ID`, `API_TOKEN`); legacy
 | `synapse maps delete <id> [--yes]` | Delete the database and places saved on that map. |
 | `synapse navigate --x <m> --y <m> [--yaw <rad>]` | Send one Nav2 `navigate_to_pose` goal in the `map` frame. |
 | `synapse gateway restart [--json]` | Restart the local OpenClaw gateway (`systemctl --user` then `openclaw gateway restart`). Also available remotely as `synapse remote gateway_restart`. |
+| `synapse cloud setup` | Operator wizard: optional embodiment, login, register **or link** to an existing Cloud robot, connect, whoami. Super+Space **Cloud: Set up**. |
+| `synapse cloud link [--robot id]` | Point this machine at a robot on your account; copies compute + motorBackend locally. |
 | `synapse connect [-s host]` | Start cloud P2P/ROS bridge (`comms.js`). Default `wss://cloud.corebrum.com`. |
 | `synapse disconnect` | Stop `comms.js`. |
 | `synapse id` | Print (or create) robot ID. |

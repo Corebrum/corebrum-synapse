@@ -44,6 +44,7 @@ import {
 } from "./commands/cloud-auth.js";
 import { registerCommand } from "./commands/register.js";
 import { embodimentCommand } from "./commands/embodiment.js";
+import { cloudSetupCommand } from "./commands/cloud.js";
 import { mapsCommand } from "./commands/maps.js";
 import { remoteControlInteractive } from "./commands/remote.js";
 import { publicCatalog, renderSynapseBanner } from "@corebrum/core";
@@ -250,6 +251,7 @@ async function hardwareSubmenu(): Promise<void> {
       message: "Robot hardware:",
       choices: [
         { name: "Configure motor drive (compute + GPIO)", value: "embodiment" },
+        { name: "Cloud setup (login, register/link, connect)", value: "cloud-setup" },
         { name: "Connect to cloud (cloud.corebrum.com)", value: "connect" },
         { name: "Disconnect from cloud", value: "disconnect" },
         { name: "Start motors", value: "start-motors" },
@@ -272,6 +274,9 @@ async function hardwareSubmenu(): Promise<void> {
       switch (action) {
         case "embodiment":
           await embodimentCommand({ action: "setup" });
+          break;
+        case "cloud-setup":
+          await cloudSetupCommand({});
           break;
         case "connect":
           await connectCommand({});

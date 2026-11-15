@@ -488,8 +488,46 @@ function authHeaders(apiToken: string): Record<string, string> {
   };
 }
 
-/** List robot IDs registered to the current ARC account (`GET /myrobots`). */
-export async function listMyRobots(): Promise<string[]> {
+export interface CloudRobotSummary {
+  id: string;
+  name?: string;
+  compute?: string;
+  motorBackend?: string;
+  camera?: string;
+  online?: boolean;
+}
+
+/** Parse GET /myrobots (ids or full robot rows). */
+export function parseMyRobotsPayload(data: unknown): CloudRobotSummary[] {
+  if (!Array.isArray(data)) {
+    throw new Error("Unexpected /myrobots response (expected array)");
+  }
+  const out: CloudRobotSummary[] = [];
+  for (const item of data) {
+    if (typeof item === "string" && item.trim()) {
+      out.push({ id: item.trim() });
+      continue;
+    }
+    if (item && typeof item === "object" && "id" in item) {
+      const row = item as Record<string, unknown>;
+      const id = String(row.id ?? "").trim();
+      if (!id) continue;
+      out.push({
+        id,
+        name: typeof row.name === "string" ? row.name : undefined,
+        compute: typeof row.compute === "string" ? row.compute : undefined,
+        motorBackend:
+          typeof row.motorBackend === "string" ? row.motorBackend : undefined,
+        camera: typeof row.camera === "string" ? row.camera : undefined,
+        online: typeof row.online === "boolean" ? row.online : undefined,
+      });
+    }
+  }
+  return out;
+}
+
+/** Robots on the signed-in account (`GET /myrobots`). */
+export async function listAccessibleCloudRobots(): Promise<CloudRobotSummary[]> {
   const apiToken = getApiToken();
   if (!apiToken) {
     throw new Error("No API token set. Run `synapse login` first.");
@@ -502,10 +540,13 @@ export async function listMyRobots(): Promise<string[]> {
     throw new Error(`Failed to list robots (HTTP ${response.status})`);
   }
   const data = (await response.json()) as unknown;
-  if (!Array.isArray(data)) {
-    throw new Error("Unexpected /myrobots response (expected array of ids)");
-  }
-  return data.map(String);
+  return parseMyRobotsPayload(data);
+}
+
+/** List robot IDs registered to the current ARC account (`GET /myrobots`). */
+export async function listMyRobots(): Promise<string[]> {
+  const rows = await listAccessibleCloudRobots();
+  return rows.map((r) => r.id);
 }
 
 export interface RobotPresence {
