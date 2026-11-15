@@ -80,6 +80,7 @@ export async function ensureRobotId(): Promise<string> {
 export async function fetchRobotDetails(): Promise<{
   camera?: string;
   compute?: string;
+  motorBackend?: string;
   name?: string;
 }> {
   const robotId = getRobotId();
@@ -98,15 +99,51 @@ export async function fetchRobotDetails(): Promise<{
     const data = (await response.json()) as {
       camera?: string;
       compute?: string;
+      motorBackend?: string;
       name?: string;
     };
     return {
       camera: data.camera && data.camera !== "" ? data.camera : undefined,
       compute: data.compute && data.compute !== "" ? data.compute : undefined,
+      motorBackend:
+        data.motorBackend && data.motorBackend !== ""
+          ? data.motorBackend
+          : undefined,
       name: data.name && data.name !== "" ? data.name : undefined,
     };
   } catch {
     return {};
+  }
+}
+
+/** Push compute + motorBackend to the signed-in Cloud robot (PATCH). */
+export async function patchCloudRobotEmbodiment(fields: {
+  compute?: string;
+  motorBackend?: string;
+}): Promise<void> {
+  const robotId = getRobotId();
+  const apiToken = getApiToken();
+  if (!robotId || !apiToken) {
+    throw new Error("Not signed in. Run synapse login first.");
+  }
+  const body: Record<string, string> = {};
+  if (fields.compute?.trim()) body.compute = fields.compute.trim();
+  if (fields.motorBackend?.trim()) body.motorBackend = fields.motorBackend.trim();
+  if (Object.keys(body).length === 0) {
+    throw new Error("Nothing to update.");
+  }
+  const response = await fetch(`${CLOUD_REST}/robots/${encodeURIComponent(robotId)}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      api_token: apiToken,
+      Authorization: `Bearer ${apiToken}`,
+    },
+    body: JSON.stringify(body),
+  });
+  const data = (await response.json().catch(() => ({}))) as { error?: string };
+  if (!response.ok) {
+    throw new Error(data.error || `Cloud update failed (HTTP ${response.status})`);
   }
 }
 
@@ -261,6 +298,7 @@ export interface CreateCloudRobotFields {
   name: string;
   camera: string;
   compute: string;
+  motorBackend?: string;
   type?: string;
   wheelCount?: number;
   wheelDiameter?: number;

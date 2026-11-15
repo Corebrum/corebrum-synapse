@@ -43,6 +43,7 @@ import {
   whoamiCommand,
 } from "./commands/cloud-auth.js";
 import { registerCommand } from "./commands/register.js";
+import { embodimentCommand } from "./commands/embodiment.js";
 import { mapsCommand } from "./commands/maps.js";
 import { remoteControlInteractive } from "./commands/remote.js";
 import { publicCatalog, renderSynapseBanner } from "@corebrum/core";
@@ -248,6 +249,7 @@ async function hardwareSubmenu(): Promise<void> {
     const action = await select<string>({
       message: "Robot hardware:",
       choices: [
+        { name: "Configure motor drive (compute + GPIO)", value: "embodiment" },
         { name: "Connect to cloud (cloud.corebrum.com)", value: "connect" },
         { name: "Disconnect from cloud", value: "disconnect" },
         { name: "Start motors", value: "start-motors" },
@@ -268,6 +270,9 @@ async function hardwareSubmenu(): Promise<void> {
     if (action === BACK) return;
     try {
       switch (action) {
+        case "embodiment":
+          await embodimentCommand({ action: "setup" });
+          break;
         case "connect":
           await connectCommand({});
           break;

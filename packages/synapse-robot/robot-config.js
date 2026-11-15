@@ -65,10 +65,17 @@ export async function ensureRobotId() {
 export function readLocalMotorPrefs() {
   const backend = primary.get("motorBackend");
   const pins = primary.get("motorPins");
+  const compute = primary.get("compute");
+  const firmataDevice = primary.get("firmataDevice");
   return {
     motorBackend:
       typeof backend === "string" && backend.trim() ? backend.trim() : undefined,
     motorPins: typeof pins === "string" && pins.trim() ? pins.trim() : undefined,
+    compute: typeof compute === "string" && compute.trim() ? compute.trim() : undefined,
+    firmataDevice:
+      typeof firmataDevice === "string" && firmataDevice.trim()
+        ? firmataDevice.trim()
+        : undefined,
   };
 }
 

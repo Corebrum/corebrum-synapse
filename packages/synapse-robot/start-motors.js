@@ -40,12 +40,13 @@ await ensureRobotId();
 void getApiToken();
 const portal = await fetchRobotDetails();
 const local = readLocalMotorPrefs();
+const compute = portal.compute ?? local.compute;
 
 const backend = resolveMotorBackend({
   argvBackend: argv.b,
   envBackend: process.env.SYNAPSE_MOTOR_BACKEND,
   localBackend: local.motorBackend,
-  compute: portal.compute,
+  compute,
   portalMotorBackend: portal.motorBackend,
   isJetson,
 });
@@ -58,8 +59,14 @@ const script =
   backend === "rpi" ? rpi : backend === "jetson" ? jetsonScript : firmata;
 
 const options = [script];
-if (argv.d) {
-  options.push("--device", String(argv.d));
+const device =
+  argv.d ??
+  (process.env.SYNAPSE_FIRMATA_DEVICE && String(process.env.SYNAPSE_FIRMATA_DEVICE).trim()
+    ? process.env.SYNAPSE_FIRMATA_DEVICE
+    : undefined) ??
+  (backend === "firmata" ? local.firmataDevice : undefined);
+if (device) {
+  options.push("--device", String(device));
 }
 const pins =
   argv.p ??

@@ -48,6 +48,7 @@ import {
   whoamiCommand,
 } from "./commands/cloud-auth.js";
 import { registerCommand } from "./commands/register.js";
+import { embodimentCommand } from "./commands/embodiment.js";
 import { hiveCommand } from "./commands/hive.js";
 import { remoteCommand } from "./commands/remote.js";
 import { mapsCommand } from "./commands/maps.js";
@@ -428,6 +429,45 @@ program
       yes?: boolean;
     }) => {
       await registerCommand(opts);
+    },
+  );
+
+program
+  .command("embodiment [action]")
+  .description(
+    "Set local compute + motor GPIO (Jetson, Pi, or Firmata). synapse up real uses the same prefs.",
+  )
+  .option("-b, --backend <name>", "jetson | rpi | firmata")
+  .option("-p, --pins <list>", "GPIO pin list (e.g. 16,18,22,26)")
+  .option("--compute <name>", "Compute label (matches Corebrum Cloud)")
+  .option("-d, --device <path>", "Firmata serial device")
+  .option("--sync-cloud", "PATCH Corebrum Cloud when signed in")
+  .option("--no-sync-cloud", "Do not update Corebrum Cloud")
+  .option("-y, --yes", "Non-interactive (use flags or saved defaults)", false)
+  .action(
+    async (
+      action: string | undefined,
+      opts: {
+        backend?: string;
+        pins?: string;
+        compute?: string;
+        device?: string;
+        syncCloud?: boolean;
+        noSyncCloud?: boolean;
+        yes?: boolean;
+      },
+    ) => {
+      const syncCloud =
+        opts.noSyncCloud === true ? false : opts.syncCloud === true ? true : undefined;
+      await embodimentCommand({
+        action: action ?? "setup",
+        backend: opts.backend,
+        pins: opts.pins,
+        compute: opts.compute,
+        device: opts.device,
+        syncCloud,
+        yes: opts.yes,
+      });
     },
   );
 

@@ -16,6 +16,11 @@ import {
   isCloudRobotRegistered,
   localRobotProfile,
 } from "../util/robot-cloud-config.js";
+import {
+  inferMotorBackendFromCompute,
+  readLocalEmbodimentPrefs,
+} from "../util/motor-drive.js";
+import { isJetson } from "../util/env.js";
 import { dim, err, header, info, ok, warn } from "../util/logger.js";
 
 export const CLOUD_CAMERA_CHOICES = [
@@ -33,10 +38,13 @@ export const CLOUD_CAMERA_CHOICES = [
 ] as const;
 
 export const CLOUD_COMPUTE_CHOICES = [
+  { name: "Jetson Orin Nano", value: "Jetson Orin Nano" },
+  { name: "Nvidia Orin", value: "Nvidia Orin" },
+  { name: "Nvidia Orin NX", value: "Nvidia Orin NX" },
+  { name: "Nvidia Thor", value: "Nvidia Thor" },
   { name: "Raspberry Pi", value: "Raspberry Pi" },
   { name: "Radxa", value: "Radxa" },
   { name: "Latte Panda", value: "Latte Panda" },
-  { name: "Nvidia Orin", value: "Nvidia Orin" },
   { name: "Arduino", value: "Arduino" },
 ] as const;
 
@@ -113,13 +121,20 @@ export async function registerCommand(opts: RegisterOptions = {}): Promise<void>
       default: "None",
     }));
 
+  const localEmb = readLocalEmbodimentPrefs();
+  const defaultCompute =
+    localEmb.compute ?? (isJetson() ? "Jetson Orin Nano" : "Raspberry Pi");
+
   const compute =
     opts.compute?.trim() ||
     (await select({
       message: "Compute (required — selects motor controller)",
       choices: [...CLOUD_COMPUTE_CHOICES],
-      default: "Raspberry Pi",
+      default: defaultCompute,
     }));
+
+  const motorBackend =
+    localEmb.motorBackend ?? inferMotorBackendFromCompute(compute);
 
   let type = opts.type?.trim() || "AMR";
   let rosNamespace = false;
@@ -171,6 +186,7 @@ export async function registerCommand(opts: RegisterOptions = {}): Promise<void>
       name,
       camera,
       compute,
+      motorBackend,
       type,
       rosNamespace,
       cmdVel,
@@ -181,7 +197,7 @@ export async function registerCommand(opts: RegisterOptions = {}): Promise<void>
       profile: localRobotProfile(),
     });
     ok(`Registered robot "${name}" (${robot.id}).`);
-    dim(`  camera=${camera}  compute=${compute}`);
+    dim(`  camera=${camera}  compute=${compute}  motorBackend=${motorBackend}`);
     dim(`  ${CLOUD_REST}/robots`);
     ok("Local ROBOT_ID and ARC share this UUID — connect / motors will use it.");
   } catch (e) {
