@@ -149,7 +149,10 @@ export async function runDoctorChecks(opts: DoctorOptions = {}): Promise<DoctorR
     });
     let koffiOk = false;
     try {
-      await import("koffi");
+      // Optional native dep of @corebrum/robot. A non-literal specifier keeps
+      // `tsc` from requiring koffi types in this package.
+      const koffiModule = "koffi";
+      await import(koffiModule);
       koffiOk = true;
     } catch {
       koffiOk = false;

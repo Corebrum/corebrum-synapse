@@ -58,7 +58,7 @@ const CLI_DIR = join(REPO_ROOT, "packages", "synapse-cli");
 // Keep these in sync (small surface area, low maintenance cost).
 const REQUIRED_RUNTIME_FILES = [
   "patches",
-  "patches/@eclipse-zenoh__zenoh-ts@1.9.0.patch",
+  "patches/@eclipse-zenoh__zenoh-ts@1.10.2.patch",
   "pnpm-workspace.yaml",
   "pnpm-lock.yaml",
   "package.json",

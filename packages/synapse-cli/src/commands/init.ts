@@ -639,7 +639,7 @@ async function promptAndConfigureOpenAi(): Promise<void> {
  */
 const CRITICAL_BUNDLE_FILES = [
   "patches",
-  "patches/@eclipse-zenoh__zenoh-ts@1.9.0.patch",
+  "patches/@eclipse-zenoh__zenoh-ts@1.10.2.patch",
   "pnpm-workspace.yaml",
   "pnpm-lock.yaml",
   "package.json",
