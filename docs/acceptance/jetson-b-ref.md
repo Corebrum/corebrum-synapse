@@ -24,4 +24,10 @@ Reference kit: Jetson Orin (Tegra) + L298N + RealSense, BOARD pins `16,18,22,26`
 - Cloud joystick teleop (Tier C-ref)
 - Encoder odom (Firmata-only)
 
-Record pass/fail date and hardware serial in `corebrum-os` decision 0136 when complete.
+## Record
+
+| Date | Result | Notes |
+|------|--------|-------|
+| 2026-11-16 | Pass | Jetson Orin; L298N direct from Tegra GPIO (JETGPIO); no Arduino; reference pin map 16,18,22,26. Recorded in corebrum-os ADR 0136. |
+
+Tier **C-ref** (Cloud teleop) passed the same day; see [jetson-c-ref.md](./jetson-c-ref.md).
