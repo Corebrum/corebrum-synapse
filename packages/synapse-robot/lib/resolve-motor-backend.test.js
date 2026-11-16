@@ -39,12 +39,23 @@ test("raspberry pi compute selects rpi", () => {
   );
 });
 
-test("portal motorBackend before tegra detect", () => {
+test("tegra detect before stale portal firmata", () => {
+  assert.equal(
+    resolveMotorBackend({
+      compute: "Nvidia Orin",
+      portalMotorBackend: "firmata",
+      isJetson: jetson,
+    }),
+    "jetson",
+  );
+});
+
+test("portal motorBackend on non-tegra", () => {
   assert.equal(
     resolveMotorBackend({
       compute: "Intel NUC",
       portalMotorBackend: "firmata",
-      isJetson: jetson,
+      isJetson: notJetson,
     }),
     "firmata",
   );

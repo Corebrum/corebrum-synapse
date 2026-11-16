@@ -7,7 +7,7 @@
  *                        [--odom] [--no-odom] [--tpr n]
  *
  * Defaults: explicit -b / SYNAPSE_MOTOR_BACKEND / config motorBackend, then portal
- * compute Raspberry Pi → rpi, portal motorBackend, else Jetson (Tegra) → jetson,
+ * compute Raspberry Pi → rpi, Jetson (Tegra) → jetson, else portal motorBackend,
  * else firmata.
  *
  * The controller is only reported as started if it is still alive after a
@@ -97,6 +97,25 @@ async function pkill(pattern) {
   } catch {
     // pkill exits 1 when nothing matched
   }
+}
+
+// JETGPIO opens /dev/mem; the detached controller must run as root with Corebrum's Node.
+if (
+  backend === "jetson" &&
+  typeof process.getuid === "function" &&
+  process.getuid() !== 0
+) {
+  const quoted = process.argv.slice(1).map((a) => `'${String(a).replace(/'/g, `'\\''`)}'`);
+  const bashCmd = [
+    "[ -f /etc/profile.d/corebrum-node.sh ] && . /etc/profile.d/corebrum-node.sh",
+    "[ -f /etc/profile.d/corebrum-ros.sh ] && . /etc/profile.d/corebrum-ros.sh",
+    `cd '${__dirname.replace(/'/g, `'\\''`)}'`,
+    'NODE="$(command -v node)"',
+    `exec "$NODE" ${quoted.join(" ")}`,
+  ].join("; ");
+  console.log("Jetson GPIO (JETGPIO) needs root; re-running start-motors with sudo.");
+  await execFile("sudo", ["bash", "-lc", bashCmd], { stdio: "inherit" });
+  process.exit(0);
 }
 
 await pkill("motors-rpi5.js");

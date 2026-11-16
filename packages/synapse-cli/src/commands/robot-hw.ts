@@ -349,7 +349,7 @@ export async function startMotorsCommand(opts: MotorsStartOptions = {}): Promise
   if (opts.tpr) args.push("--tpr", opts.tpr);
 
   try {
-    await execa("node", args, { stdio: "inherit", cwd: dir });
+    await execa(process.execPath, args, { stdio: "inherit", cwd: dir });
     ok("Robot motors started.");
   } catch (e) {
     warn(`start motors failed: ${e instanceof Error ? e.message : String(e)}`);

@@ -114,7 +114,10 @@ export function pullEmbodimentFromCloud(record: {
   const current = readLocalEmbodimentPrefs();
   const next: LocalEmbodimentPrefs = { ...current };
   if (record.compute?.trim()) next.compute = record.compute.trim();
-  const backend = normalizeBackend(record.motorBackend);
+  let backend = normalizeBackend(record.motorBackend);
+  if (backend === "firmata" && isJetson()) {
+    backend = "jetson";
+  }
   if (backend) next.motorBackend = backend;
   if (
     next.compute !== current.compute ||

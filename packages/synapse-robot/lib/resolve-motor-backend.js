@@ -28,10 +28,11 @@ export function resolveMotorBackend(opts) {
 
   if (opts.compute === "Raspberry Pi") return "rpi";
 
+  // Native GPIO on Tegra before portal firmata (e.g. Arduino removed, cloud row stale).
+  if (opts.isJetson?.()) return "jetson";
+
   const fromPortal = normalizeBackend(opts.portalMotorBackend);
   if (fromPortal) return fromPortal;
-
-  if (opts.isJetson?.()) return "jetson";
 
   return "firmata";
 }

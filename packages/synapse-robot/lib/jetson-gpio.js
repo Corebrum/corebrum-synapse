@@ -67,8 +67,8 @@ function loadLibrary() {
 
   gpioInitialise = lib.func('int gpioInitialise(void)');
   gpioTerminate = lib.func('void gpioTerminate(void)');
-  gpioSetMode = lib.func('int gpioSetMode(unsigned gpio, unsigned mode)');
-  gpioWrite = lib.func('int gpioWrite(unsigned gpio, unsigned level)');
+  gpioSetMode = lib.func('int gpioSetMode(unsigned int gpio, unsigned int mode)');
+  gpioWrite = lib.func('int gpioWrite(unsigned int gpio, unsigned int level)');
 
   return lib;
 }

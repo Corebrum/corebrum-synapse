@@ -40,8 +40,8 @@ Pin maps for L298N (Jetson BOARD, Pi BCM, Firmata) plus encoder `/odom`: **[docs
 
 1. `-b` / `SYNAPSE_MOTOR_BACKEND` / configstore `motorBackend`
 2. Portal `compute === "Raspberry Pi"` → `motors-rpi5.js`
-3. Portal `motorBackend` when set
-4. Tegra (Jetson) → `motors-jetson.js`
+3. Tegra (Jetson) → `motors-jetson.js`
+4. Portal `motorBackend` when set (non-Tegra, or explicit cloud override)
 5. Otherwise → `motors-firmata.js`
 
 `motors-jetson.js` requires system JETGPIO (`libjetgpio.so`) and optional npm
